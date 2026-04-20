@@ -1,0 +1,11 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/entries/[id]/route": "app/api/entries/[id]/route.js",
+  "/api/entries/route": "app/api/entries/route.js",
+  "/api/export/route": "app/api/export/route.js",
+  "/api/remarks/route": "app/api/remarks/route.js",
+  "/api/users/auth/route": "app/api/users/auth/route.js",
+  "/api/users/route": "app/api/users/route.js",
+  "/api/users/[id]/route": "app/api/users/[id]/route.js",
+  "/page": "app/page.js"
+}

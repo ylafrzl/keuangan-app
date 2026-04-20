@@ -1,0 +1,95 @@
+{
+  "name": "keuangan",
+  "version": "1.0.0",
+  "description": "Pencatat Keuangan - Personal Finance Recorder with SQLite",
+  "main": "electron/main.js",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "electron": "electron .",
+    "electron:dev": "concurrently \"next dev -p 3000\" \"wait-on http://localhost:3000 && electron .\"",
+    "electron:build": "next build && electron-builder --dir",
+    "electron:dist": "next build && electron-builder",
+    "dist:mac": "npm run build && electron-builder --mac --arm64",
+    "dist:mac:universal": "npm run build && electron-builder --mac --universal"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.9.0",
+    "next": "14.2.3",
+    "react": "^18",
+    "react-dom": "^18"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.19",
+    "concurrently": "^8.2.2",
+    "electron": "^30.0.0",
+    "electron-builder": "^24.13.3",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.4",
+    "wait-on": "^7.2.0"
+  },
+  "build": {
+    "appId": "com.keuangan.app",
+    "productName": "Keuangan",
+    "asar": true,
+    "icon": "build/icons/icon",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "electron/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": ".next/standalone/",
+        "to": "app/",
+        "filter": ["**/*"]
+      },
+      {
+        "from": ".next/static/",
+        "to": "app/.next/static/",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "public/",
+        "to": "app/public/",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "data/",
+        "to": "data/",
+        "filter": ["**/*"]
+      }
+    ],
+    "mac": {
+      "target": [
+        { "target": "dmg", "arch": ["arm64", "x64"] }
+      ],
+      "category": "public.app-category.finance",
+      "icon": "build/icons/icon.icns",
+      "darkModeSupport": true,
+      "minimumSystemVersion": "12.0"
+    },
+    "dmg": {
+      "title": "Keuangan",
+      "backgroundColor": "#0f172a",
+      "window": { "width": 540, "height": 380 },
+      "contents": [
+        { "x": 150, "y": 185, "type": "file" },
+        { "x": 390, "y": 185, "type": "link", "path": "/Applications" }
+      ]
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "build/icons/icon.png"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "build/icons"
+    }
+  }
+}
