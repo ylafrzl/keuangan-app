@@ -31,7 +31,7 @@ A modern personal finance management application built with **Next.js**, **React
 
 1. Clone the repository:
 ```bash
-cd keuangan-fixed
+cd keuangan-app
 ```
 
 2. Install dependencies:
