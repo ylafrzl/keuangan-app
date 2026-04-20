@@ -18,7 +18,6 @@ const TABS = [
   { id: 'income',   label: 'Pemasukan',          icon: '↑' },
   { id: 'expense',  label: 'Pengeluaran',         icon: '↓' },
   { id: 'savings',  label: 'Tabungan & Pinjaman', icon: '⬡' },
-  { id: 'settings', label: 'Export',              icon: '⇲' },
 ]
 
 export default function Home() {
@@ -198,25 +197,17 @@ export default function Home() {
 
             {/* Content */}
             <main>
-              {activeTab === 'settings' ? (
-                <SheetsSettings
-                  sheetsId={sheetsId} setSheetsId={setSheetsId}
-                  apiKey={apiKey} setApiKey={setApiKey}
-                  onExport={exportCSV}
-                />
-              ) : (
-                <div className="space-y-3">
-                  {CATEGORIES[activeTab]?.map(cat => (
-                    <CategorySection
-                      key={cat.id}
-                      cat={cat}
-                      entries={getEntriesForCat(cat.id)}
-                      onAdd={data => addEntry({ ...data, catId: cat.id })}
-                      onDelete={deleteEntry}
-                    />
-                  ))}
-                </div>
-              )}
+              <div className="space-y-3">
+                {CATEGORIES[activeTab]?.map(cat => (
+                  <CategorySection
+                    key={cat.id}
+                    cat={cat}
+                    entries={getEntriesForCat(cat.id)}
+                    onAdd={data => addEntry({ ...data, catId: cat.id })}
+                    onDelete={deleteEntry}
+                  />
+                ))}
+              </div>
             </main>
           </>
         )}
