@@ -1,6 +1,6 @@
 'use client'
-import { useState } from 'react'
-import { MONTHS, CATEGORIES, getPeriod } from '@/lib/constants'
+import { useState, useEffect } from 'react'
+import { MONTHS, CATEGORIES, getPeriod, formatRp } from '@/lib/constants'
 import { useFinance } from '@/lib/useFinance'
 import { useUsers } from '@/lib/useUsers'
 import SummaryCards from '@/components/SummaryCards'
@@ -33,6 +33,7 @@ export default function Home() {
   const [showCreate, setShowCreate]       = useState(false)
   const [sheetsId, setSheetsId]           = useState('')
   const [apiKey, setApiKey]               = useState('')
+  const [totalSavings, setTotalSavings]   = useState(0) // total accumulated savings from all months
 
   // Finance data — scoped to activeUser
   const {
@@ -44,8 +45,33 @@ export default function Home() {
   const summary = getSummary()
   const period  = getPeriod(year, month)
 
+  // Fetch total accumulated savings from all periods
+  const fetchTotalSavings = () => {
+    if (!activeUser?.id) {
+      setTotalSavings(0)
+      return
+    }
+    fetch(`/api/entries?userId=${activeUser.id}`)
+      .then(r => r.json())
+      .then(res => {
+        if (res.ok && res.data) {
+          const total = res.data
+            .filter(e => e.cat_id === 'savings')
+            .reduce((sum, e) => sum + e.amount, 0)
+          setTotalSavings(total)
+        }
+      })
+      .catch(() => setTotalSavings(0))
+  }
+
+  useEffect(() => {
+    fetchTotalSavings()
+  }, [activeUser?.id])
+
+  // Generate period options: dari 5 tahun lalu hingga max December 2027 (atau lebih jika sudah lewat)
+  const maxYear = Math.max(2027, year + 2)
   const periodOptions = []
-  for (let y = year - 1; y <= year + 1; y++) {
+  for (let y = year - 5; y <= maxYear; y++) {
     MONTHS.forEach((m, i) => periodOptions.push({ label: `${m} ${y}`, y, m: i }))
   }
 
@@ -78,6 +104,21 @@ export default function Home() {
       await login(res.data.id, data.pin)
     }
     return res
+  }
+
+  // Wrapper functions to refresh total savings after entry changes
+  const handleAddEntry = async (data) => {
+    const success = await addEntry(data)
+    if (success) {
+      // Small delay to ensure DB is updated
+      setTimeout(() => fetchTotalSavings(), 300)
+    }
+  }
+
+  const handleDeleteEntry = async (id) => {
+    await deleteEntry(id)
+    // Refresh total savings after delete
+    setTimeout(() => fetchTotalSavings(), 300)
   }
 
   return (
@@ -141,18 +182,24 @@ export default function Home() {
           /* User is logged in → show finance app */
           <>
             {/* Active user badge */}
-            <div className="flex items-center gap-2 mb-5 px-3 py-2 bg-slate-800/30 border border-slate-700/40 rounded-xl">
-              <div
-                className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
-                style={{ background: activeUser.color + '22', color: activeUser.color }}
-              >
-                {activeUser.avatar}
+            <div className="flex items-center justify-between gap-2 mb-5 px-3 py-2 bg-slate-800/30 border border-slate-700/40 rounded-xl">
+              <div className="flex items-center gap-2">
+                <div
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
+                  style={{ background: activeUser.color + '22', color: activeUser.color }}
+                >
+                  {activeUser.avatar}
+                </div>
+                <div>
+                  <span className="text-sm text-slate-200 font-medium">{activeUser.name}</span>
+                  <span className="text-xs text-slate-500 ml-2">data pribadi</span>
+                </div>
+                {loading && <span className="text-xs text-blue-400 animate-pulse ml-auto">memuat...</span>}
               </div>
-              <div>
-                <span className="text-sm text-slate-200 font-medium">{activeUser.name}</span>
-                <span className="text-xs text-slate-500 ml-2">data pribadi</span>
+              <div className="text-right">
+                <div className="text-xs text-slate-500">Total tabungan akumulasi</div>
+                <div className="text-sm font-semibold text-emerald-400">{formatRp(totalSavings)}</div>
               </div>
-              {loading && <span className="text-xs text-blue-400 animate-pulse ml-auto">memuat...</span>}
             </div>
 
             {/* Summary */}
@@ -203,8 +250,8 @@ export default function Home() {
                     key={cat.id}
                     cat={cat}
                     entries={getEntriesForCat(cat.id)}
-                    onAdd={data => addEntry({ ...data, catId: cat.id })}
-                    onDelete={deleteEntry}
+                    onAdd={data => handleAddEntry({ ...data, catId: cat.id })}
+                    onDelete={handleDeleteEntry}
                   />
                 ))}
               </div>

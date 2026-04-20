@@ -39,6 +39,7 @@ export function useFinance(year, month, userId) {
       body: JSON.stringify({ id, userId, catId, name, amount, note, period }),
     }).then(r => r.json())
     if (!res.ok) setEntries(prev => prev.filter(e => e.id !== id))
+    return res.ok
   }, [period, userId])
 
   const deleteEntry = useCallback(async (id) => {
